@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [error, setError] = useState('');
@@ -20,9 +20,18 @@ const Login = () => {
 
         try {
             setLoading(true);
+            // פנייה ל-API להרשמה או התחברות
             const response = await userAPI.loginOrRegister({ name, phone });
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            console.log("תשובת השרת:", response);
+            // שמירת המשתמש ב-localStorage כדי לשמור על חיבור גם ברענון דף
+            localStorage.setItem('user', JSON.stringify(response.data));
+            
+            // עדכון הסטייט ב-App.js וניווט לדשבורד
+            if (onLogin) {
+                onLogin();
+            }
             navigate('/dashboard');
+            
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || 'שגיאה בהתחברות לשרת. ודא שה-Backend דלוק.');

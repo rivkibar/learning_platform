@@ -1,29 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard'; // ייבוא רכיב הדשבורד האמיתי והמעוצב
-import Workspace from './pages/Workspace'; // 1. מייבאים את עמוד מרחב העבודה החדש
-
-// רכיבי דמה זמניים - נחליף אותם בעמודים אמיתיים בשלבים הבאים
-const ChatDummy = () => <div style={{ padding: 40, textAlign: 'center', direction: 'rtl' }}><h2>חלון צ'אט AI (בקרוב...)</h2></div>;
+import Dashboard from './pages/Dashboard';
+import Workspace from './pages/Workspace';
+import HistoryPage from './pages/HistoryPage';
 
 function App() {
+  // נבדוק ב-localStorage אם המשתמש כבר מחובר
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('user'));
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      setIsAuthenticated(true);
+      setUserId(user.id); // נשמור את ה-ID מהמשתמש שהתחבר
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
-        {/* נתיב למסך ההתחברות */}
-        <Route path="/login" element={<Login />} />
+        {/* העברנו את הפונקציה onLogin כדי לעדכן את הסטייט ב-App */}
+        <Route 
+          path="/login" 
+          element={<Login onLogin={() => {
+            setIsAuthenticated(true);
+            const user = JSON.parse(localStorage.getItem('user'));
+            setUserId(user?.id);
+          }} />} 
+        />
         
-        {/* נתיב למסך הראשי (בחירת נושאים) - עודכן לרכיב האמיתי */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route 
+          path="/dashboard" 
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />} 
+        />
         
-        {/* 2. נתיב למסך הלמידה מול ה-AI - מקבל בצורה דינמית את ה-ID של תת הקטגוריה */}
-        <Route path="/workspace/:subCategoryId" element={<Workspace />} />
+        <Route 
+          path="/workspace/:subCategoryId" 
+          element={isAuthenticated ? <Workspace /> : <Navigate to="/login" replace />} 
+        />
         
-        {/* נתיב למסך הלמידה הישן (אם תצטרך אותו זמנית) */}
-        <Route path="/chat" element={<ChatDummy />} />
-        
-        {/* הגנת ברירת מחדל: כל כתובת אחרת תפנה אוטומטית למסך הלוגין */}
+        <Route 
+          path="/history" 
+          element={isAuthenticated ? <HistoryPage userId={userId} /> : <Navigate to="/login" replace />} 
+        />
+
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

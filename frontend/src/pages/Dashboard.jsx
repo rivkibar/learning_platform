@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // הוספת ייבוא של הניווט
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -8,7 +8,13 @@ export default function Dashboard() {
     const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState(null);
     
-    const navigate = useNavigate(); // אתחול כלי הניווט
+    const navigate = useNavigate();
+
+    // פונקציית התנתקות
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        window.location.href = '/login'; // מרענן את הדף ומעביר ללוגין
+    };
 
     useEffect(() => {
         fetch('http://localhost:5000/api/categories') 
@@ -56,11 +62,37 @@ export default function Dashboard() {
             <header className="dashboard-header">
                 <h1 className="dashboard-title">מרכז הלמידה הצבעוני שלי 🌈</h1>
                 <p className="dashboard-subtitle">בחר נושא מרתק ונתחיל ללמוד ולתרגל יחד עם ה-AI!</p>
+                
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
+                    <button 
+                        className="history-nav-btn" 
+                        onClick={() => navigate('/history')}
+                    >
+                        📜 צפייה בהיסטוריית הלמידה שלי
+                    </button>
+
+                    <button 
+                        onClick={handleLogout}
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#fee2e2',
+                            color: '#b91c1c',
+                            border: '1px solid #fecaca',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            transition: 'background-color 0.2s'
+                        }}
+                    >
+                        יציאה (Logout) 🚪
+                    </button>
+                </div>
             </header>
 
             {categories.length === 0 ? (
                 <div className="no-categories-box">
-                    <p>לאמצאו קטגוריות במערכת. יש להזין נתונים בבסיס הנתונים.</p>
+                    <p>לא נמצאו קטגוריות במערכת. יש להזין נתונים בבסיס הנתונים.</p>
                 </div>
             ) : (
                 <div className="categories-grid">
@@ -111,10 +143,7 @@ export default function Dashboard() {
                                             key={sub.id} 
                                             className="subcategory-item"
                                             style={{ backgroundColor: subBg, borderColor: subBorder }}
-                                            onClick={() => {
-                                                // ניווט לעמוד הלמידה עם ה-ID של תת הקטגוריה
-                                                navigate(`/workspace/${sub.id}`);
-                                            }}
+                                            onClick={() => navigate(`/workspace/${sub.id}`)}
                                         >
                                             <span className="sub-text" style={{ color: subText }}>{sub.name}</span>
                                             <span className="sub-arrow" style={{ color: subText }}>←</span>

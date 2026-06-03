@@ -16,7 +16,7 @@ export const categoryAPI = {
 
 export const promptAPI = {
     askAI: (data) => API.post('/prompts/ask', data),
-    getHistory: (userId) => API.get(`/prompts/history/${userId}`),
+    getHistory: (userId) => API.get(`/history/${userId}`),
 };
 
 export default API;
