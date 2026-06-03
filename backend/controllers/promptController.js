@@ -1,58 +1,54 @@
-const prisma = require('../services/prisma');
-const { generateAIResponse } = require('../services/aiService');
+import prisma from '../services/prisma.js';
+import { generateAIResponse } from '../services/aiService.js';
 
-
-const askAI = async (req, res) => {
+// 1. שליפת פרומפטים לפי תת-קטגוריה
+export const getPromptsBySubCategory = async (req, res) => {
     try {
-        const { user_id, category_id, sub_category_id, prompt } = req.body;
-
-        if (!user_id || !category_id || !sub_category_id || !prompt) {
-            return res.status(400).json({ error: "All fields are required (user_id, category_id, sub_category_id, prompt)" });
-        }
-
-       
-        const aiResponseText = await generateAIResponse(prompt);
-
-        const newPromptRecord = await prisma.prompt.create({
-            data: {
-                user_id: parseInt(user_id),
-                category_id: parseInt(category_id),
-                sub_category_id: parseInt(sub_category_id),
-                prompt: prompt,
-                response: aiResponseText
-            }
+        const { id } = req.params;
+        const prompts = await prisma.prompt.findMany({
+            where: { subCategoryId: parseInt(id) }
         });
-
-        
-        res.status(201).json(newPromptRecord);
+        res.json(prompts);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "An error occurred while processing your request to the AI" });
+        console.error('Error fetching prompts:', error);
+        res.status(500).json({ error: 'Failed to fetch prompts' });
     }
 };
 
+// 2. שליחת שאלה ל-AI
+export const askAI = async (req, res) => {
+    try {
+        const { promptText, userId, categoryId, subCategoryId } = req.body;
+        const aiResponse = await generateAIResponse(promptText);
 
-const getUserHistory = async (req, res) => {
+        const newPrompt = await prisma.prompt.create({
+            data: {
+                userId,
+                categoryId,
+                subCategoryId,
+                prompt: promptText,
+                response: aiResponse
+            }
+        });
+
+        res.json(newPrompt);
+    } catch (error) {
+        console.error('Error in askAI:', error);
+        res.status(500).json({ error: 'Failed to process AI request' });
+    }
+};
+
+// 3. משיכת היסטוריית המשתמש
+export const getUserHistory = async (req, res) => {
     try {
         const { userId } = req.params;
-
         const history = await prisma.prompt.findMany({
-            where: { user_id: parseInt(userId) },
-            orderBy: { created_at: 'desc' },
-            include: {
-                category: true,     
-                sub_category: true   
-            }
+            where: { userId: parseInt(userId) },
+            orderBy: { createdAt: 'desc' }
         });
-
-        res.status(200).json(history);
+        res.json(history);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Could not fetch user history" });
+        console.error('Error fetching history:', error);
+        res.status(500).json({ error: 'Failed to fetch history' });
     }
-};
-
-module.exports = {
-    askAI,
-    getUserHistory
 };

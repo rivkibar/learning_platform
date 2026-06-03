@@ -2,29 +2,29 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// ייבוא הראוטים
+// ייבוא הראוטרים
 const userRoutes = require('./routes/userRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
-const promptRoutes = require('./routes/promptRoutes'); // הראוטר החדש!
+const promptRoutes = require('./routes/promptRoutes.js').default;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// 1. הגדרות יסוד (חייבות להופיע לפני הראוטרים!)
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // קריטי עבור קריאת נתונים שנשלחים מה-Frontend
 
-// חיבור הראוטים למערכת
+// 2. חיבור הראוטרים של ה-API
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/prompts', promptRoutes); // החיבור החדש!
+app.use('/api', promptRoutes);
 
-// Test Route
-app.get('/api/health', (req, res) => {
-  res.json({ status: "success", message: "Server is running smoothly" });
+// נתיב בדיקה כללי
+app.get('/', (req, res) => {
+    res.send('Server is up and running smoothly! 🚀');
 });
 
-// Start Server
+// הפעלת השרת
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
 });

@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { askAI, getUserHistory } = require('../controllers/promptController');
 
+import { askAI, getUserHistory, getPromptsBySubCategory } from '../controllers/promptController.js';
 
+router.get('/subcategories/:id/prompts', getPromptsBySubCategory);
 router.post('/ask', askAI);
-
 router.get('/history/:userId', getUserHistory);
 
-module.exports = router;
+export default router;

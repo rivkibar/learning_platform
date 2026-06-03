@@ -12,3 +12,6 @@ router.post('/', createCategory);
 router.post('/sub', createSubCategory);
 
 module.exports = router;
+
+
+

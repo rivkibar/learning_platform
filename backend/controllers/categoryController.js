@@ -4,7 +4,7 @@ const getCategories = async (req, res) => {
     try {
         const categories = await prisma.category.findMany({
             include: {
-                sub_categories: true 
+                subCategories: true 
             }
         });
         res.status(200).json(categories);
